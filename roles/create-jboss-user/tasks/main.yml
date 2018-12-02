@@ -1,0 +1,6 @@
+---
+- name: Agregar grupo "{{ jboss_eap_user }}"
+  group: name={{ jboss_eap_user }}
+
+- name: Agregar usuario "{{ jboss_eap_user }}"
+  user: name={{ jboss_eap_user }} group={{ jboss_eap_user }} home={{ jboss_eap_user_home }}

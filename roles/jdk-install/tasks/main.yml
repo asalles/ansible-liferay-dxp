@@ -1,0 +1,5 @@
+---
+- name: Instalar Java {{java_version}} y algunas dependencias
+  yum: name={{item}} state=present disable_gpg_check=yes
+  with_items:
+   - java-{{java_version}}.0-openjdk-devel

@@ -1,0 +1,21 @@
+---
+- name: Firewall inicio y activacion
+  service: name=firewalld state=started enabled=yes
+
+- name: Firewall settings 9999
+  firewalld: zone=public port=9999/tcp permanent=true state=enabled
+
+- name: Firewall settings 9990
+  firewalld: zone=public port=9990/tcp permanent=true state=enabled
+
+- name: Firewall settings 8080
+  firewalld: zone=public port=8080/tcp permanent=true state=enabled
+
+- name: Firewall settings 8180
+  firewalld: zone=public port=8180/tcp permanent=true state=enabled
+
+- name: Firewall settings 8443
+  firewalld: zone=public port=8443/tcp permanent=true state=enabled
+
+- name: Reload Firewall
+  shell: firewall-cmd --reload

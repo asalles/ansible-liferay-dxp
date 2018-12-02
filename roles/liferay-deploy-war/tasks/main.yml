@@ -1,0 +1,52 @@
+---
+- name: Creando ROOT.war
+  file: path={{ jboss_eap_home_path }}/standalone/deployments/ROOT.war state=directory
+
+- name: Copiando WAR Liferay DXP
+  get_url: url={{liferay_repo}}/{{ liferay_war }}  dest=/tmp/liferay-war.zip mode=0755 
+
+- name: Descomprimiendo Liferay OSGI
+  unarchive: src=/tmp/liferay-war.zip dest={{ jboss_eap_home_path }}/standalone/deployments/ROOT.war copy=no
+
+- name: Recorriendo permisos JBoss PATH
+  file:
+    path: "{{jboss_eap_home_path}}"
+    owner: "{{jboss_eap_user}}"
+    group: "{{jboss_eap_user}}"
+    state: "directory"
+    recurse: "yes"
+
+- name: Recorriendo permisos Liferay PATH
+  file:
+    path: "{{liferay_path}}"
+    owner: "{{jboss_eap_user}}"
+    group: "{{jboss_eap_user}}"
+    state: "directory"
+    recurse: "yes"
+
+- name: Recorriendo permisos /opt
+  file:
+    path: /opt
+    owner: "{{jboss_eap_user}}"
+    group: "{{jboss_eap_user}}"
+    state: "directory"
+
+- name: Creando portal-ext.properties desde template
+  template:
+    src: portal-ext.properties.j2
+    dest: "{{liferay_path}}/portal-ext.properties"
+    owner: "{{jboss_eap_user}}"
+    group: "{{jboss_eap_user}}"
+    mode: 0644
+
+- name: Copia de licencia
+  get_url: url={{liferay_repo}}/{{liferay_license_key}} dest={{liferay_autodeploy_dir}} mode=0777
+
+- name: Deploy de WAR Liferay DXP
+  copy:
+    content: ""
+    dest: "{{jboss_eap_home_path}}/standalone/deployments/ROOT.war.dodeploy"
+    force: no
+    group: "{{jboss_eap_user}}"
+    owner: "{{jboss_eap_user}}"
+    mode: 0666

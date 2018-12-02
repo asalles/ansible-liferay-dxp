@@ -1,0 +1,6 @@
+---
+- name: Copiando Liferay OSGI
+  get_url: url={{liferay_repo}}/{{osgi_file}} dest=/tmp/{{osgi_file}} mode=0444
+ 
+- name: Descomprimiendo Liferay OSGI
+  unarchive: src=/tmp/{{osgi_file}} dest=/tmp copy=no

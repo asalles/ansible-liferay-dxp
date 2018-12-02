@@ -1,0 +1,10 @@
+---
+  - name: Instalar algunas dependencias de EAP
+    yum: name={{item}} state=present
+    with_items:
+     - unzip
+     - libselinux-python
+     - apr
+     - apr-util
+     - firewalld
+     - psmisc

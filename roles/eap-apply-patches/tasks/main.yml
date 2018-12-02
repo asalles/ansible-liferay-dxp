@@ -1,0 +1,10 @@
+---
+ - name: Download {{jboss_eap_last_patch}} to tmp
+   get_url: url={{jboss_repo}}/{{ item }} dest=/tmp/{{ item }} mode=0440
+   with_items:
+    - "{{ jboss_eap_last_patch }}"
+
+ - name: Aplicar Parches
+   command: chdir={{jboss_eap_home_path}}/bin/ ./jboss-cli.sh "patch apply /tmp/{{ item }} --override-all"
+   with_items:
+    - "{{ jboss_eap_last_patch }}"

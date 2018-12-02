@@ -1,0 +1,7 @@
+[liferay]
+liferay.cautivatech.com    ansible_ssh_host=10.199.101.211
+
+[all:vars]
+ansible_connection=ssh
+ansible_ssh_user=root
+ansible_ssh_pass=cautiva

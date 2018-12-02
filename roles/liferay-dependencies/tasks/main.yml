@@ -1,0 +1,66 @@
+---
+- name: Crear directorio Liferay
+  file: path={{ liferay_path }} state=directory
+
+- name: Crear estructura Liferay interna
+  file: path={{ liferay_path }}/{{item}} state=directory
+  with_items:
+   - osgi
+   - data
+   - deploy
+   - logs
+   - core
+   - work
+
+- name: Crear link simbolico JBoss EAP en Liferay
+  file: src={{jboss_eap_home_path}} dest={{ liferay_path }}/{{jboss_service_name}} state=link
+
+- name: WORKAROUND liferay path - Creando link simbolico en /opt
+  file: src=/opt/liferay/{{item}} dest=/opt/{{item}} state=link
+  with_items:
+   - osgi
+   - data
+   - deploy
+   - logs
+   - core
+   - work
+
+- name: Copiando Dependencias Liferay (EE70)
+  get_url: url={{liferay_repo}}/deps-{{liferay_support}}/{{item}} dest=/tmp/{{ item }} mode=755
+  when: liferay_support == "EE70"
+  with_items:
+   - com.liferay.registry.api.jar
+   - portal-kernel.jar
+   - portlet.jar
+   - support-tomcat.jar
+
+
+- name: Copiando Dependencias Liferay (EE71)
+  get_url: url={{liferay_repo}}/deps-{{liferay_support}}/{{item}} dest=/tmp/{{ item }} mode=755
+  when: liferay_support == "EE71"
+  with_items:
+   - com.liferay.registry.api.jar
+   - portal-kernel.jar
+   - portlet.jar
+#   - com.liferay.petra.concurrent.jar
+#   - com.liferay.petra.executor.jar
+#   - com.liferay.petra.function.jar
+#   - com.liferay.petra.io.jar
+#   - com.liferay.petra.lang.jar
+#   - com.liferay.petra.memory.jar
+#   - com.liferay.petra.nio.jar
+#   - com.liferay.petra.process.jar
+#   - com.liferay.petra.reflect.jar
+#   - com.liferay.petra.string.jar
+
+- name: Copiando Liferay OSGI
+  get_url: url={{liferay_repo}}/{{osgi_file}} dest=/tmp/{{osgi_file}} mode=0444 
+
+- name: Descomprimiendo Liferay OSGI
+  unarchive: src=/tmp/{{osgi_file}} dest=/tmp copy=no
+
+- name: Copiar OSGI Liferay folders
+  command: /usr/bin/rsync -r /tmp/{{ liferay_osgi_folder_default }}/ {{ liferay_path }}/osgi 
+
+- name: WORKAROUND liferay path - Creando link simbolico portal-ext.properties
+  file: src=/opt/liferay/portal-ext.properties dest=/opt/portal-ext.properties state=link force=yes

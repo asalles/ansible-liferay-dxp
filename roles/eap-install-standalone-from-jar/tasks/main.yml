@@ -1,0 +1,14 @@
+---
+ - name: Instalador de JBoss EAP (1/3) - Download instalador {{jboss_eap_installer_file}} a tmp
+   get_url: url={{jboss_repo}}/{{ item }} dest=/tmp/{{ item }} mode=0440
+   with_items:
+    - "{{jboss_eap_installer_file}}"
+
+ - name: Instalador de JBoss EAP (2/3) - Copiar opciones automatizadas al /tmp de destino
+   template: src={{item}} dest=/tmp/{{item}}
+   with_items:
+    - auto.xml
+    - auto.xml.variables
+
+ - name: Instalador de JBoss EAP (3/3) - Ejecutando Jar de Instalacion
+   command: chdir=/usr/bin/ ./java  -jar /tmp/{{jboss_eap_installer_file}} /tmp/auto.xml -variablefile /tmp/auto.xml.variables

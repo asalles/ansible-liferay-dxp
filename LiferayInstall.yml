@@ -1,0 +1,14 @@
+---
+# liferay install
+
+- hosts: liferay
+  remote_user: root
+  vars_files:
+    - vars/main.yml
+
+  roles:
+    - initial-tasks
+    - liferay-dependencies
+    - liferay-prep
+    - liferay-datasource
+    - liferay-deploy-war

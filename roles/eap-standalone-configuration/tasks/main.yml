@@ -1,0 +1,24 @@
+---
+ - name: Configuracion de propiedades de jboss
+   lineinfile: dest={{jboss_eap_home_path}}/bin/domain.conf insertafter="policy-permissions=true.\n" line={{ item }}
+   with_items:
+    - JAVA_OPTS="$JAVA_OPTS -Djboss.bind.address={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}"
+    - JAVA_OPTS="$JAVA_OPTS -Djboss.bind.address.management={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_management_interface].ipv4.address }}"
+    - JAVA_OPTS="$JAVA_OPTS -Djboss.modules.metrics=true"
+    - JAVA_OPTS="$JAVA_OPTS -Dfile.encoding=UTF-8"
+
+ - name: Agregando binding
+   replace:
+     path: /opt/jboss-eap/standalone/configuration/standalone.xml
+     regexp: "127.0.0.1"
+     replace: "{{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}"
+
+ - name: "Stop JBoss"
+   service:
+     name: "jboss-eap"
+     state: stopped
+
+ - name: "Start JBoss"
+   service:
+     name: "jboss-eap"
+     state: started

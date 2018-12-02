@@ -1,0 +1,21 @@
+---
+- name: Creando tabla de hosts
+  become: true
+  blockinfile:
+    dest: /etc/hosts
+    content: "{{ lookup('template', 'templates/etc-hosts.j2') }}"
+    state: present
+
+- name: Fijando hostname en todos los sistemas
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Copiando clean.sh
+  template: src={{item}} dest=/tmp/{{item}}
+  with_items:
+   - clean.sh
+
+- name: FIX DNS 8.8.8.8
+  template: src={{item}} dest=/etc/{{item}}
+  with_items:
+   - resolv.conf

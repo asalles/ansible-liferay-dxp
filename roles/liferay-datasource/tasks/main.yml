@@ -1,0 +1,40 @@
+---
+# BASE: https://access.redhat.com/solutions/127713
+
+- name: Copiando Drivers DB
+  get_url: url={{liferay_repo}}/db/{{item}} dest=/tmp/{{ item }} mode=755
+  with_items:
+   - hsql.jar
+   - mariadb.jar
+   - mysql.jar
+   - postgresql.jar
+   - ojdbc6.jar
+
+- name: Instalacion de dependencias modulos jar
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="module add --name=com.liferay.portal --dependencies=ibm.jdk,javax.api,javax.mail.api,javax.servlet.api,javax.servlet.jsp.api,javax.transaction.api --resource-delimiter=, --resources=/tmp/mariadb.jar,/tmp/portlet.jar,/tmp/com.liferay.registry.api.jar,/tmp/mysql.jar,/tmp/postgresql.jar,/tmp/hsql.jar,/tmp/portal-kernel.jar,/tmp/ojdbc6.jar"
+
+- name: Oracle DataSource Register Driver
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=datasources/jdbc-driver={{liferay_db_driver}}:add(driver-module-name=com.liferay.portal,driver-name={{liferay_db_driver}})"
+
+- name: "Stop JBoss"
+  service:
+    name: "jboss-eap"
+    state: stopped
+
+- name: "Start JBoss"
+  service:
+    name: "jboss-eap"
+    state: started
+
+- name: Oracle DataSource Verify the driver
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=datasources/jdbc-driver={{liferay_db_driver}}:read-resource"
+
+- name: Oracle DataSource Create a datasource (1/2)
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=datasources/data-source=OracleDS:add(jndi-name=\"java:jboss/datasources/{{liferay_db_driver}}DS\",connection-url=\"{{liferay_default_database_url}}\",driver-name={{liferay_db_driver}},user-name={{ liferay_db_user }},password={{ liferay_db_password }},valid-connection-checker-class-name=\"org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker\",stale-connection-checker-class-name=\"org.jboss.jca.adapters.jdbc.extensions.oracle.OracleStaleConnectionChecker\",exception-sorter-class-name=\"org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter\")"
+
+- name: Oracle DataSource Create a datasource (2/2)
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=datasources/data-source=OracleDS:read-resource"
+
+- name: Oracle DataSource enabling the new database on the running server
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=datasources/data-source=OracleDS:enable()"
+  when: liferay_db_driver == "oracle"

@@ -1,0 +1,60 @@
+---
+##################
+## JBOSS variables
+##################
+
+jboss_service_name: jboss-eap
+jboss_eap_user: jboss
+jboss_eap_user_home: /home/jboss
+jboss_eap_version: 7.1.0
+jboss_eap_admin_user: admin
+jboss_eap_admin_password: Cautiva1.
+jboss_eap_home_path: /opt/jboss-eap
+jboss_repo: "http://vpn.cautivatech.com/sw/jboss"
+
+jboss_eap_installer_file: jboss-eap-7.1.0-installer.jar
+jboss_eap_last_patch: [ "jboss-eap-7.1.5-patch.zip" ]
+
+java_version: 1.8
+jboss_binding_interface: eth0
+jboss_binding_management_interface: eth0
+
+
+####################
+## LIFERAY variables
+####################
+
+liferay_repo: "http://vpn.cautivatech.com/sw/liferay"
+liferay_path: /opt/liferay
+liferay_autodeploy_dir: "{{liferay_path}}/deploy"
+liferay_license_key: activation-key-digitalenterprisedevelopment-7.1-triallicenses.xml 
+
+# ENTERPRISE
+#liferay_support: EE70
+#osgi_file: liferay-dxp-digital-enterprise-osgi-7.0-sp7-20180307180151313.zip
+#liferay_war: liferay-dxp-digital-enterprise-7.0-sp7-20180307180151313.war
+#liferay_osgi_folder_default: liferay-dxp-digital-enterprise-7.0-sp7/osgi  # default directory created at uncompress {{ osgi_file }}
+
+liferay_support: EE71
+osgi_file: liferay-dxp-osgi-7.1.10-ga1-20180703090613030.zip
+liferay_war: liferay-dxp-7.1.10-ga1-20180703090613030.war
+liferay_osgi_folder_default: liferay-dxp-osgi-7.1.10-ga1  # default directory created at uncompress {{ osgi_file }}
+
+
+# COMMUNITY
+#liferay_support: CE
+#osgi_file: liferay-ce-portal-osgi-7.1.0-ga1-20180703012531655.zip
+#liferay_osgi_folder_default: liferay-ce-portal-osgi-7.1.0-ga1
+#liferay_war: liferay-ce-portal-7.1.0-ga1-20180703012531655.war
+# -------
+
+#DBB
+liferay_db_driver: oracle
+#liferay_default_database_url: "jdbc:oracle:thin:@{{host}}:{{port}}/{{sid}}"
+liferay_default_database_url: jdbc:oracle:thin:@scandcvdesa.dcv.net:1521/liferay
+liferay_db_user: liferay
+liferay_db_password: lr123
+
+#liferay_driverClassName: com.mysql.jdbc.Driver
+liferay_driverClassName: oracle.jdbc.OracleDriver
+

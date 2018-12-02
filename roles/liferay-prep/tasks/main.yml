@@ -1,0 +1,61 @@
+---
+- name: Creando System Property (1/2)
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/system-property=org.apache.catalina.connector.URI_ENCODING:add(value="UTF-8")"
+
+- name: Creando System Property (2/2)
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:add(value="true")"
+
+- name: "Stop JBoss"
+  service:
+    name: "jboss-eap"
+    state: stopped
+
+- name: "Start JBoss"
+  service:
+    name: "jboss-eap"
+    state: started
+
+- name: Configurando deployment timeout
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=deployment-scanner/scanner=default:write-attribute(name=deployment-timeout,value="360")"
+
+- name: Configurando Security Domain PortalRealm(1/2)
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=security/security-domain=PortalRealm/:add(cache-type=default)"
+
+- name: Configurando Security Domain PortalRealm(2/2)
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=security/security-domain=PortalRealm/authentication=classic:add(login-modules=[{"code"=>"com.liferay.portal.security.jaas.PortalLoginModule", "flag"=>"required"}])"
+ 
+- name: Removiendo WELD (1/2)
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=weld:remove()"
+
+- name: Removiendo WELD (2/2)
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/extension=org.jboss.as.weld:remove()"
+
+- name: Removiendo welcome-content (1/2)
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=undertow/server=default-server/host=default-host/location=\/:remove()"
+
+- name: Removiendo welcome-content (2/2)
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=undertow/configuration=handler:remove()"
+
+- name: Configurando JSP
+  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=undertow/servlet-container=default/setting=jsp:write-attribute(name=development,value=true)"
+
+#- name: Configurando JSP (2/3)
+#  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=undertow/servlet-container=default/setting=jsp:write-attribute(name=source-vm,value=1.8)"
+
+#- name: Configurando JSP (3/3)
+#  command: chdir={{jboss_eap_home_path}}/bin/ ././jboss-cli.sh --controller={{ hostvars[inventory_hostname]['ansible_'+jboss_binding_interface].ipv4.address }}:9990 -c  --command="/subsystem=undertow/servlet-container=default/setting=jsp:write-attribute(name=target-vm,value=1.8)"
+
+- name: Agregando JAVA_OPTS parameters en standalone.conf (1/2)
+  replace:
+    path: "{{ liferay_path }}/{{ jboss_service_name }}/bin/standalone.conf"
+    regexp: "JAVA_OPTS=\"-Xms1303m -Xmx1303m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true\""
+    replace: "JAVA_OPTS=\"-Djava.net.preferIPv4Stack=true\""
+    backup: yes
+
+- name: Agregando JAVA_OPTS parameters en standalone.conf (2/2)
+  lineinfile:
+    dest: "{{ liferay_path }}/{{ jboss_service_name }}/bin/standalone.conf"
+    line: "JAVA_OPTS=\"$JAVA_OPTS -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true  -Djboss.as.management.blocking.timeout=480 -Duser.timezone=GMT -Xmx2048m -XX:MaxMetaspaceSize=512m -XX:MetaspaceSize=200m\""
+    insertbefore: EOF
+    state: present
+    backup: yes
